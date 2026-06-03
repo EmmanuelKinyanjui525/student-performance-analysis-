@@ -1,0 +1,154 @@
+# # ============================================================
+# STUDENTS PERFORMANCE — COMPLETE R ANALYSIS SCRIPT
+# Author: KINYANJUI EMMANUEL MWAURA | Dataset: StudentsPerformance.csv
+# ============================================================
+
+
+# INSTALL & LOAD PACKAGES
+
+install.packages("dplyr")
+install.packages("skimr")
+install.packages("corrplot")
+
+library(dplyr)
+library(ggplot2)
+library(skimr)
+library(corrplot)
+
+# IMPORT DATASET
+
+library(readxl)
+Students <- read.csv("C:/Users/HomePC/Desktop/StudentsPerformance.csv")
+View(StudentsPerformance)
+
+# View first rows
+head(Students)
+
+str(Students)
+
+colSums(is.na(Students))
+sum(duplicated(Students))
+
+
+# EXPLORATORY DATA ANALYSIS (EDA)
+
+summary(Students)
+skim(Students)
+
+# Average scores
+
+Students <- Students %>%
+  mutate(average_score = (math.score + reading.score + writing.score)/3)
+
+summary(Students$average_score)
+
+# VISUALIZATION - Distribution of Math Scores
+
+ggplot(Students, aes(x = math.score)) +
+  geom_histogram(binwidth = 5, fill = "steelblue", color = "white") +
+  labs(title = "Distribution of Math Scores",
+       x = "math.Score",
+       y = "Frequency") +
+  theme_minimal()
+
+
+# Reading vs Writing Scores
+
+ggplot(Students, aes(x = reading.score, y = writing.score)) +
+  geom_point(color = "darkgreen", alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Reading vs Writing Scores",
+       x = "Reading Score",
+       y = "Writing Score") +
+  theme_minimal()
+
+# Average score by Gender
+
+ggplot(Students, aes(x = gender, y = average_score, fill = gender)) +
+  geom_boxplot() +
+  labs(title = "Average Score by Gender",
+       x = "Gender",
+       y = "Average Score") +
+  theme_minimal()
+
+# Average score by parental Education
+
+ggplot(Students, aes(x = parental.level.of.education,
+                     y = average_score,
+                     fill = parental.level.of.education)) +
+  geom_boxplot() +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Average Score by Parent Education",
+       x = "Parent Education",
+       y = "Average Score")
+
+# Correletion Analysis
+
+scores <- Students %>%
+  select(math.score, reading.score, writing.score)
+
+cor_matrix <- cor(scores)
+
+print(cor_matrix)
+
+
+# Correlation Plot
+
+corrplot(cor_matrix,
+         method = "color",
+         addCoef.col = "black",
+         tl.col = "black",
+         number.cex = 0.8)
+
+
+# Performance Based on Test Preparation 
+
+ggplot(Students,
+       aes(x = test.preparation.course,
+           y = average_score,
+           fill = test.preparation.course)) +
+  geom_boxplot() +
+  labs(title = "Impact of Test Preparation Course",
+       x = "Test Preparation",
+       y = "Average Score") +
+  theme_minimal()
+
+# Top Performing Students
+
+top_students <- Students %>%
+  arrange(desc(average_score)) %>%
+  select(gender,
+         parental.level.of.education,
+         math.score,
+         reading.score,
+         writing.score) %>%
+  head(10)
+
+print(top_students)
+
+
+# KEY FINDINGS
+# Reading and writing scores are highly correlated.
+# Students who completed the test preparation course generally performed better.
+# Higher parental education levels tend to associate with better student performance.
+# Score distributions appear approximately normal with a few low-score outliers.
+# Average performance differs slightly across gender groups depending on the subject.
+
+
+#Predictive Model
+
+model <- lm(math.score ~ reading.score + writing.score + test.preparation.course,
+            data = Students)
+
+summary(model)
+
+
+# CONCLUSION
+
+#This analysis cleaned the data set, explored trends, visualized relationships,
+#and identified factors associated with student performance. 
+#The data set shows strong relationships among academic subjects
+#and highlights the positive impact of preparation courses and parental education on student outcomes.
+
+
